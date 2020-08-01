@@ -4,7 +4,7 @@ venv
 .idea
 *.iml
 .env
-latest_tag.txt
+token.json
 py_github.egg-info
 dist
 build
