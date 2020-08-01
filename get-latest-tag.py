@@ -1,26 +1,26 @@
-from os import environ
-from dotenv import load_dotenv
 from github import Github
+from os import getenv, path
+from dotenv import load_dotenv
 
-load_dotenv(verbose=True)
+load_dotenv()
 
-if 'GITHUB_TOKEN' in environ:
-    gitToken = (environ.get('GITHUB_TOKEN'))
-else:
-    gitToken = ""
+gitToken = getenv('GITHUB_TOKEN')
+repo = getenv('REPO_NAME')
+tagFile = getenv('LATEST_TAG_FILE')
 
-if 'REPO_NAME' in environ:
-    repo = (environ.get('REPO_NAME'))
-else:
-    repo = "masgeek/akilimo-mobile"
+print(repo)
+print(tagFile)
 
 # or using an access token
 myGithub = Github(gitToken)
 
 repo = myGithub.get_repo(repo)
 releaseTag = repo.get_latest_release().tag_name
+pr = repo.create_git_blob
 
-tagFile = open("latest_tag.txt", "w")
+print(pr)
+
+tagFile = open(tagFile, "w")
 tagFile.write(releaseTag)
 tagFile.close()
 
