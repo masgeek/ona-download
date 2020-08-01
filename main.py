@@ -16,22 +16,28 @@ rootUrl = "https://api.ona.io"
 
 onaToken = ""
 payload = ""
-headers = {'authorization': 'Token ' + onaToken}
 helper = OnaHelper.OnaHelper(username=username, password=password, baseurl=rootUrl)
 
 print(f'Using the following credentials username: {username} and password: {password}')
 
+data = json.loads("{}")
 try:
-    with open(tokenJsonFile) as json_file_obj:
-        data = json.load(json_file_obj)
-        if "api_token" in data:
-            onaToken = data['api_token']
-            print(f'Found api token: {onaToken} -> proceeding to fetch from metadata')
-        else:
-            print("No api token, requesting a new one")
-            onaToken = helper.refresh_token(tokenJsonFile)
-    if not onaToken:
-        helper.fetch_form_data(onaToken)
+    try:
+        with open(tokenJsonFile) as json_file_obj:
+            data = json.load(json_file_obj)
+    except Exception as fileErr:
+        print(f'Error reading {tokenJsonFile} file {fileErr}')
+
+    # next sequence here
+    if "api_token" in data:
+        onaToken = data['api_token']
+    else:
+        print("No api token, requesting a new one")
+        onaToken = helper.refresh_token(tokenJsonFile)
+    if onaToken:
+        headers = {'authorization': 'Token ' + onaToken}
+        print(f'Found api token: {onaToken} -> proceeding to fetch from metadata')
+        helper.fetch_form_data(payload="", headers=headers)
     else:
         print('Unable to fetch token, please check your connection -> Exiting now, sorry human')
 

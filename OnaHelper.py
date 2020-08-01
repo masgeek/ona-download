@@ -35,6 +35,12 @@ class OnaHelper:
             print(f'Other error occurred: {err}')
         return api_token
 
-    def fetch_form_data(self, token):
-        print(f'Fetching ona forms using token: {token} -> staring')
+    def fetch_form_data(self, payload, headers):
+        print(f'----> Fetching form data')
+        _url = self.baseurl + "/api/v1/data"
+        _response = requests.get(_url, data=payload, headers=headers)
+        _response.raise_for_status()
+
+        resp = _response.json()
+        print(f'----> Finished fetching form data {_response.status_code}')
         return ""
