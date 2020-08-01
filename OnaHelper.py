@@ -7,20 +7,28 @@ from requests.exceptions import HTTPError
 import json
 from os import getenv, path
 from dotenv import load_dotenv
+import sqlite3
 
 
-# noinspection PyMethodMayBeStatic
 class OnaHelper:
+    """@:param username"""
+    """@:param password"""
+    """@:param baseurl APi endpoint url"""
+
     def __init__(self, username, password, baseurl):
         self.username = username
         self.password = password
         self.baseurl = baseurl
+        self.conn = sqlite3.connect('ona_form.db')
 
     def _auth_token(self):
         _url = self.baseurl + "/api/v1/user"
         _response = requests.get(_url, auth=(self.username, self.password))
         _response.raise_for_status()
         return _response.json()
+
+    def _create_database(self):
+        c = self.conn.cursor()
 
     def refresh_token(self, json_file):
         api_token = ""
@@ -42,5 +50,10 @@ class OnaHelper:
         _response.raise_for_status()
 
         resp = _response.json()
+        for form in resp:
+            print('----------------')
+            print(form)
+            print('----------------')
+
         print(f'----> Finished fetching form data {_response.status_code}')
         return ""

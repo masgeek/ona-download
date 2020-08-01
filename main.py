@@ -18,7 +18,7 @@ onaToken = ""
 payload = ""
 helper = OnaHelper.OnaHelper(username=username, password=password, baseurl=rootUrl)
 
-print(f'Using the following credentials username: {username} and password: {password}')
+print(f'Using the following credentials username: {username} and password: xxxxxx sucker!!!!')
 
 data = json.loads("{}")
 try:
@@ -36,7 +36,7 @@ try:
         onaToken = helper.refresh_token(tokenJsonFile)
     if onaToken:
         headers = {'authorization': 'Token ' + onaToken}
-        print(f'Found api token: {onaToken} -> proceeding to fetch from metadata')
+        print(f'Found valid api token -> proceeding to fetch from metadata')
         helper.fetch_form_data(payload="", headers=headers)
     else:
         print('Unable to fetch token, please check your connection -> Exiting now, sorry human')
