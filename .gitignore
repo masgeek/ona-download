@@ -1,6 +1,8 @@
+# file: ~/.gitignore_global
 venv
-*.iml
+.DS_Store
 .idea
+*.iml
 .env
 latest_tag.txt
 py_github.egg-info
