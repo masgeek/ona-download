@@ -5,7 +5,7 @@ import time
 import json
 import aiohttp
 import asyncio
-import OnaHelper
+import OnaHelperMulti as Ona
 from os import getenv
 from dotenv import load_dotenv
 
@@ -21,8 +21,11 @@ rootUrl = "https://api.ona.io"
 
 onaToken = ""
 payload = ""
-helper = OnaHelper.OnaHelper(username=username, password=password, baseurl=rootUrl, db_file=db_file,
-                             form_list_file=form_list_file)
+helper = Ona.OnaHelperMulti(username=username,
+                            password=password,
+                            baseurl=rootUrl,
+                            db_file=db_file,
+                            form_list_file=form_list_file)
 
 data = json.loads("{}")
 
