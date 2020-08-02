@@ -8,3 +8,4 @@ token.json
 py_github.egg-info
 dist
 build
+__pycache__

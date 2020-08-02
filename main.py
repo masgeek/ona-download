@@ -51,10 +51,19 @@ try:
                 form_name = form[1]
                 json_file = f'downloads/json/{form_name}.json'
                 file_name = f'downloads/csv/{form_name}.csv'
-                data_resp = helper.download_csv_form_data(form_id, payload="", headers=headers)
-                tagFile = open(file_name, "w")
-                tagFile.write(data_resp)
-                tagFile.close()
+                tagFile = open(file_name, 'w', newline='', encoding='utf-8')
+                try:
+                    print(f'Pulling submission for {form_name}')
+                    data_resp = helper.download_csv_form_data(form_id, payload="", headers=headers)
+
+                    print(f'Reaponse is {data_resp}')
+                    tagFile.write(data_resp)
+                except Exception as err:
+                    print(f'Unable to write CSV {form_name} for: {err}')
+                finally:
+                    tagFile.close()
+
+
     else:
         print('Unable to fetch token, please check your connection -> Exiting now, sorry human')
 
