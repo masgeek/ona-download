@@ -11,12 +11,13 @@ load_dotenv()
 username = getenv('ONA_USERNAME')
 password = getenv('ONA_PASSWORD')
 tokenJsonFile = getenv('TOKEN_JSON')
+db_file = 'ona_form.db'
 
 rootUrl = "https://api.ona.io"
 
 onaToken = ""
 payload = ""
-helper = OnaHelper.OnaHelper(username=username, password=password, baseurl=rootUrl)
+helper = OnaHelper.OnaHelper(username=username, password=password, baseurl=rootUrl, db_file=db_file)
 
 print(f'Using the following credentials username: {username} and password: xxxxxx sucker!!!!')
 
