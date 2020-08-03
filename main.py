@@ -14,13 +14,13 @@ password = getenv('ONA_PASSWORD')
 tokenJsonFile = getenv('TOKEN_JSON')
 db_file = 'ona_form.db'
 form_list_file = 'formList.txt'
+json_form_list_file = 'jsonFormList.txt'
 
 rootUrl = "https://api.ona.io"
 
 onaToken = ""
 payload = ""
-helper = OnaHelper.OnaHelper(username=username, password=password, baseurl=rootUrl, db_file=db_file,
-                             form_list_file=form_list_file)
+helper = OnaHelper.OnaHelper(username=username, password=password, baseurl=rootUrl, db_file=db_file)
 
 print(f'Using the following credentials username: {username} and password: xxxxxx sucker!!!!')
 
@@ -32,7 +32,6 @@ try:
             data = json.load(json_file_obj)
     except Exception as fileErr:
         print(f'Error reading {tokenJsonFile} file {fileErr}')
-
     # next sequence here
     if "api_token" in data:
         onaToken = data['api_token']
@@ -44,7 +43,7 @@ try:
         print(f'Found valid api token -> proceeding to fetch from metadata')
         resp = helper.fetch_form_data(payload="", headers=headers)
         if resp == 200:
-            form_id_list = helper.read_form_list()
+            form_id_list = helper.read_form_list(json_form_list_file)
             for form in form_id_list:
                 # Now we query the data
                 form_id = form[0]
@@ -62,7 +61,6 @@ try:
                     print(f'Unable to write CSV {form_name} for: {err}')
                 finally:
                     tagFile.close()
-
 
     else:
         print('Unable to fetch token, please check your connection -> Exiting now, sorry human')

@@ -20,12 +20,11 @@ class OnaHelper:
     @:param baseurl APi endpoint url
     """
 
-    def __init__(self, username, password, baseurl, db_file, form_list_file):
+    def __init__(self, username, password, baseurl, db_file):
         self.username = username
         self.password = password
         self.baseurl = baseurl
         self.db_file = db_file
-        self.form_list_file = form_list_file
 
     def _auth_token(self):
         _url = self.baseurl + "/api/v1/user"
@@ -89,13 +88,13 @@ class OnaHelper:
 
         return status_code
 
-    def read_form_list(self):
-        f = open(self.form_list_file, "r")
+    def read_form_list(self, form_list_file):
+        f = open(form_list_file, "r")
         file_string = f.read()
         file_list = file_string.replace('"', '').split(",")
 
         # Loop though the file list
-        form_id_List = []
+        form_id_list = []
         form_id = 0
         conn = sqlite3.connect(self.db_file)
         conn.row_factory = sqlite3.Row
@@ -108,10 +107,10 @@ class OnaHelper:
             for form_data in data:
                 form_id = form_data['form_id']
                 form_name = form_data['form_name']
-                form_id_List.append([form_id, form_name])
+                form_id_list.append([form_id, form_name])
         f.close()
         conn.close()
-        return form_id_List
+        return form_id_list
 
     def download_json_form_data(self, form_id, payload, headers):
         _url = f'{self.baseurl}/api/v1/data/{form_id}'
