@@ -10,4 +10,4 @@ jobs:
         with:
           repo-token: '${{ secrets.GITHUB_TOKEN }}'
           event: APPROVE
-          body: 'Automatic approval since the developer is alone 🎊'
+          body: 'Automatic approval since the developer is alone in this project for now 🎊'
