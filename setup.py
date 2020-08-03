@@ -5,14 +5,14 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name='py-github',
+    name='ona-download',
     version='1.0.0',
     packages=setuptools.find_packages(),
-    url='https://github.com/masgeek/py-github.git',
+    url='https://github.com/masgeek/ona-download.git',
     license='MIT',
     author='Sammy Barasa',
     author_email='barsamms@gmail.com',
-    description='Python github api utilities',
+    description='Python ona.io download utility',
     long_description=long_description,
     long_description_content_type="text/markdown",
     classifiers=[
@@ -22,6 +22,6 @@ setup(
     ],
     python_requires='>=3',
     install_requires=[
-        "python-env"
+        "python-env", "wheel", "pandas", "aiohttp[speedups]"
     ],
 )
