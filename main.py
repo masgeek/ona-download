@@ -40,8 +40,7 @@ try:
         with open(tokenJsonFile) as json_file_obj:
             data = json.load(json_file_obj)
     except Exception as fileErr:
-        # logging.error(f'Error reading {tokenJsonFile} file {fileErr}', exc_info=True)
-        logging.exception("Unable to read file")
+        logging.error(f'Error reading {tokenJsonFile} file {fileErr}', exc_info=True)
     # next sequence here
     if "api_token" in data:
         onaToken = data['api_token']
