@@ -102,7 +102,7 @@ class OnaHelper:
         for form_name in file_list:
             name = form_name.strip("\n").rstrip("\n")
             # Now we query the database
-            c.execute('SELECT * FROM ona_form_list WHERE form_name = ?', (name,))
+            c.execute('SELECT form_id,form_name FROM ona_form_list WHERE form_name = ?', (name,))
             data = [dict(row) for row in c.fetchall()]
             for form_data in data:
                 form_id = form_data['form_id']

@@ -31,7 +31,7 @@ onaToken = ""
 payload = ""
 helper = OnaHelper.OnaHelper(username=username, password=password, baseurl=rootUrl, db_file=db_file)
 
-print(f'Using the following credentials username: {username} and password: xxxxxx sucker!!!!')
+logging.debug(f'Using the following credentials username: {username}')
 
 data = json.loads("{}")
 
