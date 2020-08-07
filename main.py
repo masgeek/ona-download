@@ -20,7 +20,6 @@ form_list_file = 'formList.txt'
 json_form_list_file = 'jsonFormList.txt'
 
 rootUrl = "https://api.ona.io"
-
 # logLevel = logging.DEBUG if CONFIG['log_debug_messages'] else logging.INFO
 logfile = path.join(path.dirname(path.abspath(__file__)), "ona_download.log")
 logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
@@ -34,6 +33,56 @@ helper = OnaHelper.OnaHelper(username=username, password=password, baseurl=rootU
 logging.debug(f'Using the following credentials username: {username}')
 
 data = json.loads("{}")
+
+
+def fetch_csv_data(form_id_list):
+    try:
+        for form in form_id_list:
+            # Now we query the data
+            form_id = form[0]
+            form_name = form[1]
+            file_name = f'downloads/csv/{form_name}.csv'
+            tagFile = open(file_name, 'w', newline='', encoding='utf-8')
+            try:
+                logging.info(f'Pulling submission for {form_name}')
+                data_resp = helper.download_csv_form_data(form_id, payload="", headers=headers)
+
+                logging.info(f'Response is {data_resp}')
+                tagFile.write(data_resp)
+            except Exception as err:
+                logging.error(f'Unable to write CSV {form_name} for: {err}', exc_info=True)
+            finally:
+                tagFile.close()
+    except Exception as ex:
+        logging.error(f'Unable to download CSV: {ex}', exc_info=True)
+
+
+def fetch_json_data(form_id_list):
+    try:
+        for form in form_id_list:
+            # Now we query the data
+            form_id = form[0]
+            form_name = form[1]
+            json_file = f'downloads/json/{form_name}.json'
+            try:
+                logging.info(f'Pulling submission for {form_name}')
+                data_resp = helper.download_json_form_data(form_id, payload="", headers=headers)
+                logging.info(f'Response is {data_resp}')
+                with open(json_file, 'w') as json_file_wr:
+                    json.dump(data_resp, json_file_wr, indent=4)
+                # df = pd.read_json(r'' + json_file)
+
+                with open(json_file) as loaded_json_obj:
+                    loaded_json = json.load(loaded_json_obj)
+                df = pd.json_normalize(loaded_json)
+
+                logging.info(df)
+                df.to_csv(rf'downloads/csv/{form_name}.csv')
+            except Exception as errEx:
+                logging.error(f'Unable to write JSON {form_name} for: {errEx}', exc_info=True)
+    except Exception as ex:
+        logging.error(f'Unable to download JSON: {ex}', exc_info=True)
+
 
 try:
     try:
@@ -49,27 +98,13 @@ try:
         onaToken = helper.refresh_token(tokenJsonFile)
     if onaToken:
         headers = {'authorization': 'Token ' + onaToken}
-        logging.debug(f'Found valid api token -> proceeding to fetch from metadata')
+        logging.debug(f'Found valid api token -> proceeding to fetch form metadata')
         resp = helper.fetch_form_data(payload="", headers=headers)
         if resp == 200:
-            form_id_list = helper.read_form_list(json_form_list_file)
-            for form in form_id_list:
-                # Now we query the data
-                form_id = form[0]
-                form_name = form[1]
-                json_file = f'downloads/json/{form_name}.json'
-                file_name = f'downloads/csv/{form_name}.csv'
-                tagFile = open(file_name, 'w', newline='', encoding='utf-8')
-                try:
-                    logging.info(f'Pulling submission for {form_name}')
-                    data_resp = helper.download_csv_form_data(form_id, payload="", headers=headers)
-
-                    logging.info(f'Response is {data_resp}')
-                    tagFile.write(data_resp)
-                except Exception as err:
-                    logging.error(f'Unable to write CSV {form_name} for: {err}', exc_info=True)
-                finally:
-                    tagFile.close()
+            json_form_list = helper.read_form_list(json_form_list_file)
+            csv_form_list = helper.read_form_list(form_list_file)
+            # fetch_csv_data(csv_form_list)
+            # fetch_json_data()
 
     else:
         logging.warning('Unable to fetch token, please check your connection -> Exiting now, sorry human')
