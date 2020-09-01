@@ -103,7 +103,7 @@ try:
         if resp == 200:
             json_form_list = helper.read_form_list(json_form_list_file)
             csv_form_list = helper.read_form_list(form_list_file)
-            #fetch_csv_data(csv_form_list)
+            fetch_csv_data(csv_form_list)
             fetch_json_data(json_form_list)
 
     else:
