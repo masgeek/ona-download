@@ -16,6 +16,7 @@ tokenJsonFile = getenv('TOKEN_JSON')
 log_level = getenv('LOG_LEVEL', 'INFO')
 
 db_file = 'ona_form.db'
+all_form_list = 'allFormList.txt'
 form_list_file = 'formList.txt'
 json_form_list_file = 'jsonFormList.txt'
 
@@ -101,9 +102,9 @@ try:
         logging.debug(f'Found valid api token -> proceeding to fetch form metadata')
         resp = helper.fetch_form_data(payload="", headers=headers)
         if resp == 200:
-            json_form_list = helper.read_form_list(json_form_list_file)
-            csv_form_list = helper.read_form_list(form_list_file)
-            fetch_csv_data(csv_form_list)
+            json_form_list = helper.read_form_list(all_form_list)
+            # csv_form_list = helper.read_form_list(form_list_file)
+            # fetch_csv_data(csv_form_list)
             fetch_json_data(json_form_list)
 
     else:

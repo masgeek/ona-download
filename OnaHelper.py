@@ -11,6 +11,7 @@ import json
 from os import getenv, path
 from dotenv import load_dotenv
 import sqlite3
+import shutil
 
 
 class OnaHelper:
@@ -139,3 +140,23 @@ class OnaHelper:
         except Exception as err:
             print(f'Other error occurred: {err}')
         return resp
+
+    def download_form_attachments(self, form_id, payload, headers, page_no, page_size, media_type):
+        _url = f'{self.baseurl}/api/v1/media?xform={form_id}&page={page_no}&page_size={page_size}&type={media_type}'
+        print(f'Running attachment url {_url}')
+        resp = json.loads("[]")
+        try:
+            _response = requests.get(_url, data=payload, headers=headers)
+            _response.raise_for_status()
+            resp = _response.json()
+        except HTTPError as http_err:
+            print(f'Unable to fetch form list: {http_err}')
+        except Exception as err:
+            print(f'Other error occurred: {err}')
+        return resp
+
+    def download_attachment(self, file_name, url, extension, page_no):
+        response = requests.get(url, stream=True)
+        with open(f'downloads/images/page_{page_no}/{file_name}.{extension}', 'wb') as out_file:
+            shutil.copyfileobj(response.raw, out_file)
+        del response
