@@ -1,6 +1,3 @@
-import requests
-from string import Template
-from requests.exceptions import HTTPError
 import json
 import logging
 import pandas as pd
@@ -21,7 +18,7 @@ form_list_file = 'formList.txt'
 json_form_list_file = 'jsonFormList.txt'
 
 rootUrl = "https://api.ona.io"
-# logLevel = logging.DEBUG if CONFIG['log_debug_messages'] else logging.INFO
+
 logfile = path.join(path.dirname(path.abspath(__file__)), "ona_download.log")
 logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
                     handlers=[logging.FileHandler(logfile, 'w', 'utf-8')],
@@ -31,7 +28,7 @@ onaToken = ""
 payload = ""
 helper = OnaHelper.OnaHelper(username=username, password=password, baseurl=rootUrl, db_file=db_file)
 
-logging.debug(f'Using the following credentials username: {username}')
+logging.info(f'Using the following credentials username: {username}')
 
 data = json.loads("{}")
 
@@ -50,8 +47,8 @@ def fetch_csv_data(form_id_list):
 
                 logging.info(f'Response is {data_resp}')
                 tagFile.write(data_resp)
-            except Exception as err:
-                logging.error(f'Unable to write CSV {form_name} for: {err}', exc_info=True)
+            except Exception as err1:
+                logging.error(f'Unable to write CSV {form_name} for: {err1}', exc_info=True)
             finally:
                 tagFile.close()
     except Exception as ex:
