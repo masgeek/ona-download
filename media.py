@@ -42,9 +42,16 @@ def fetch_media_files(form_id, form_name, page_number):
         logging.info(f'Pulling attachments for {form_id}')
         data_resp = helper.download_form_attachments(form_id, payload="", headers=headers,
                                                      page_no=page_number, page_size=50, media_type="image")
+
+        basePath = f'downloads/images/{form_name}'
+        if not os.path.exists(basePath):
+            logging.info(f'This path {basePath} does not exist creating it')
+            os.mkdir(basePath)
+
         for form in data_resp:
-            dir = f'downloads/images/{form_name}/page_{page_number}'
+            dir = f'{basePath}/page_{page_number}'
             if not os.path.exists(dir):
+                logging.info(f'This path {dir} does not exist for {form_name}')
                 os.mkdir(dir)
             file_name = form["id"]
             attachment_url = form["download_url"]
@@ -55,7 +62,7 @@ def fetch_media_files(form_id, form_name, page_number):
             # logging.info(f'Filename is {filename} and extension is {extension}-------->')
             logging.info(f'Downloading attachment is {extension} and extension is {attachment_url}-------->')
             helper.download_attachment(file_name=file_name, url=attachment_url,
-                                       extension=extension, page_no=page_number)
+                                       extension=extension, page_no=page_number, form_name=form_name)
 
     except Exception as ex:
         logging.error(f'Unable to download attachments: {ex}', exc_info=True)
@@ -79,7 +86,7 @@ try:
         # Loop through certain range to denote number of pages
         for x in range(1, 501, 1):
             logging.info(f'Fetching data in Page number {x}')
-            fetch_media_files("337918", "Score_Weed_Control_AC", page_number=x)
+            fetch_media_files(form_id="337918", form_name="Score_Weed_Control_AC", page_number=x)
     else:
         logging.warning('Unable to fetch token, please check your connection -> Exiting now, sorry human')
 

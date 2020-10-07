@@ -155,8 +155,8 @@ class OnaHelper:
             print(f'Other error occurred: {err}')
         return resp
 
-    def download_attachment(self, file_name, url, extension, page_no):
+    def download_attachment(self, file_name, url, extension, page_no, form_name):
         response = requests.get(url, stream=True)
-        with open(f'downloads/images/page_{page_no}/{file_name}.{extension}', 'wb') as out_file:
+        with open(f'downloads/images/{form_name}/page_{page_no}/{file_name}.{extension}', 'wb') as out_file:
             shutil.copyfileobj(response.raw, out_file)
         del response
