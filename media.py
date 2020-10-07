@@ -23,7 +23,7 @@ json_form_list_file = 'jsonFormList.txt'
 
 rootUrl = "https://api.ona.io"
 # logLevel = logging.DEBUG if CONFIG['log_debug_messages'] else logging.INFO
-logfile = path.join(path.dirname(path.abspath(__file__)), "ona_download.log")
+logfile = path.join(path.dirname(path.abspath(__file__)), "ona_media_download.log")
 logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
                     handlers=[logging.FileHandler(logfile, 'w', 'utf-8')],
                     level=log_level)
