@@ -79,7 +79,7 @@ try:
         # Loop through certain range to denote number of pages
         for x in range(1, 501, 1):
             logging.info(f'Fetching data in Page number {x}')
-            fetch_media_files("444864", page_number=x)
+            fetch_media_files("337918", page_number=x)
     else:
         logging.warning('Unable to fetch token, please check your connection -> Exiting now, sorry human')
 
