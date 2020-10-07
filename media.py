@@ -43,26 +43,27 @@ def fetch_media_files(form_id, form_name, page_number):
         data_resp = helper.download_form_attachments(form_id, payload="", headers=headers,
                                                      page_no=page_number, page_size=50, media_type="image")
 
-        basePath = f'downloads/images/{form_name}'
-        if not os.path.exists(basePath):
-            logging.info(f'This path {basePath} does not exist creating it')
-            os.mkdir(basePath)
+        base_path = f'downloads/images/{form_name}'
+        if not os.path.exists(base_path):
+            logging.info(f'This base path {base_path} does not exist creating it')
+            os.mkdir(base_path)
 
         for form in data_resp:
-            dir = f'{basePath}/page_{page_number}'
-            if not os.path.exists(dir):
-                logging.info(f'This path {dir} does not exist for {form_name}')
-                os.mkdir(dir)
+            save_dir = f'{base_path}/page_{page_number}'
+            if not os.path.exists(save_dir):
+                logging.info(f'This path {save_dir} does not exist for {form_name}')
+                os.mkdir(save_dir)
             file_name = form["id"]
             attachment_url = form["download_url"]
             filename = form["filename"]
-            data = filename.split('.')
-            extension = data[1]
+            _downloadData = filename.split('.')
+            extension = _downloadData[1]
 
             # logging.info(f'Filename is {filename} and extension is {extension}-------->')
-            logging.info(f'Downloading attachment is {extension} and extension is {attachment_url}-------->')
+            logging.info(f'Downloading attachment is {attachment_url} and extension is {extension}-------->')
             helper.download_attachment(file_name=file_name, url=attachment_url,
-                                       extension=extension, page_no=page_number, form_name=form_name)
+                                       extension=extension, page_no=page_number,
+                                       form_name=form_name, save_dir=save_dir)
 
     except Exception as ex:
         logging.error(f'Unable to download attachments: {ex}', exc_info=True)
