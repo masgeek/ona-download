@@ -37,13 +37,13 @@ logging.debug(f'Using the following credentials username: {username}')
 data = json.loads("{}")
 
 
-def fetch_media_files(form_id, page_number):
+def fetch_media_files(form_id, form_name, page_number):
     try:
         logging.info(f'Pulling attachments for {form_id}')
         data_resp = helper.download_form_attachments(form_id, payload="", headers=headers,
                                                      page_no=page_number, page_size=50, media_type="image")
         for form in data_resp:
-            dir = f'downloads/images/page_{page_number}'
+            dir = f'downloads/images/{form_name}/page_{page_number}'
             if not os.path.exists(dir):
                 os.mkdir(dir)
             file_name = form["id"]
@@ -79,7 +79,7 @@ try:
         # Loop through certain range to denote number of pages
         for x in range(1, 501, 1):
             logging.info(f'Fetching data in Page number {x}')
-            fetch_media_files("337918", page_number=x)
+            fetch_media_files("337918", "Score_Weed_Control_AC", page_number=x)
     else:
         logging.warning('Unable to fetch token, please check your connection -> Exiting now, sorry human')
 
