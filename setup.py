@@ -22,6 +22,6 @@ setup(
     ],
     python_requires='>=3',
     install_requires=[
-        "python-env", "wheel", "pandas", "aiohttp[speedups]"
+        "python-env", "aiohttp[speedups]", "pyyaml"
     ],
 )

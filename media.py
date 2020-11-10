@@ -1,10 +1,6 @@
-import requests
-from string import Template
-from requests.exceptions import HTTPError
 import json
 import os
 import logging
-import pandas as pd
 import OnaHelper
 from os import getenv, path
 from dotenv import load_dotenv

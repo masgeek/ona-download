@@ -1,8 +1,10 @@
 import json
 import logging
+import logging.config
 import OnaHelper
 from os import getenv, path
 from dotenv import load_dotenv
+import yaml
 
 load_dotenv()
 
@@ -18,10 +20,22 @@ json_form_list_file = 'jsonFormList.txt'
 
 rootUrl = "https://api.ona.io"
 
-logfile = path.join(path.dirname(path.abspath(__file__)), "ona_download.log")
-logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
-                    handlers=[logging.FileHandler(logfile, 'w', 'utf-8')],
-                    level=log_level)
+with open('logger.yaml', 'r') as f:
+    config = yaml.safe_load(f.read())
+    logging.config.dictConfig(config)
+
+# logfileError = path.join(path.dirname(path.abspath(__file__)), "errors.log")
+# logfileInfo = path.join(path.dirname(path.abspath(__file__)), "info.log")
+# c_handler = logging.StreamHandler()
+# f_handler = logging.FileHandler(logfileError, 'w', 'utf-8')
+# f_info_handler = logging.FileHandler(logfileInfo, 'w', 'utf-8')
+# c_handler.setLevel(logging.INFO)
+# f_info_handler.setLevel(logging.INFO)
+# f_handler.setLevel(logging.ERROR)
+#
+# logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
+#                     handlers=[c_handler, f_handler, f_info_handler],
+#                     level=log_level)
 
 onaToken = ""
 payload = ""
@@ -30,28 +44,6 @@ helper = OnaHelper.OnaHelper(username=username, password=password, baseurl=rootU
 logging.info(f'Using the following credentials username: {username}')
 
 data = json.loads("{}")
-
-
-def fetch_csv_data(form_id_list):
-    try:
-        for form in form_id_list:
-            # Now we query the data
-            form_id = form[0]
-            form_name = form[1]
-            file_name = f'downloads/csv/{form_name}.csv'
-            tagFile = open(file_name, 'w', newline='', encoding='utf-8')
-            try:
-                logging.info(f'Pulling submission for {form_name}')
-                data_resp = helper.download_csv_form_data(form_id, payload="", headers=headers)
-
-                logging.info(f'Response is {data_resp}')
-                tagFile.write(data_resp)
-            except Exception as err1:
-                logging.error(f'Unable to write CSV {form_name} for: {err1}', exc_info=True)
-            finally:
-                tagFile.close()
-    except Exception as ex:
-        logging.error(f'Unable to download CSV: {ex}', exc_info=True)
 
 
 def fetch_json_data(form_id_list):
@@ -64,7 +56,7 @@ def fetch_json_data(form_id_list):
             try:
                 logging.info(f'Pulling submission for {form_name}')
                 data_resp = helper.download_json_form_data(form_id, payload="", headers=headers)
-                logging.info(f'Response is {data_resp}')
+                logging.info(f'Form {form_name} hase {len(data_resp)} submissions')
                 with open(json_file, 'w') as json_file_wr:
                     json.dump(data_resp, json_file_wr, indent=4)
             except Exception as errEx:
