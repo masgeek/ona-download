@@ -1,6 +1,5 @@
 import json
 import logging
-import pandas as pd
 import OnaHelper
 from os import getenv, path
 from dotenv import load_dotenv
@@ -68,14 +67,6 @@ def fetch_json_data(form_id_list):
                 logging.info(f'Response is {data_resp}')
                 with open(json_file, 'w') as json_file_wr:
                     json.dump(data_resp, json_file_wr, indent=4)
-                # df = pd.read_json(r'' + json_file)
-
-                with open(json_file) as loaded_json_obj:
-                    loaded_json = json.load(loaded_json_obj)
-                df = pd.json_normalize(loaded_json)
-
-                logging.info(df)
-                df.to_csv(rf'downloads/csv/{form_name}.csv')
             except Exception as errEx:
                 logging.error(f'Unable to write JSON {form_name} for: {errEx}', exc_info=True)
     except Exception as ex:
