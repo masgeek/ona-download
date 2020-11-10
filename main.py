@@ -20,22 +20,18 @@ json_form_list_file = 'jsonFormList.txt'
 
 rootUrl = "https://api.ona.io"
 
-with open('logger.yaml', 'r') as f:
-    config = yaml.safe_load(f.read())
-    logging.config.dictConfig(config)
+logfileError = path.join(path.dirname(path.abspath(__file__)), "logs/errors.log")
+logfileInfo = path.join(path.dirname(path.abspath(__file__)), "logs/info.log")
+c_handler = logging.StreamHandler()
+f_handler = logging.FileHandler(logfileError, 'w', 'utf-8')
+f_info_handler = logging.FileHandler(logfileInfo, 'w', 'utf-8')
+c_handler.setLevel(logging.INFO)
+f_info_handler.setLevel(logging.INFO)
+f_handler.setLevel(logging.ERROR)
 
-# logfileError = path.join(path.dirname(path.abspath(__file__)), "errors.log")
-# logfileInfo = path.join(path.dirname(path.abspath(__file__)), "info.log")
-# c_handler = logging.StreamHandler()
-# f_handler = logging.FileHandler(logfileError, 'w', 'utf-8')
-# f_info_handler = logging.FileHandler(logfileInfo, 'w', 'utf-8')
-# c_handler.setLevel(logging.INFO)
-# f_info_handler.setLevel(logging.INFO)
-# f_handler.setLevel(logging.ERROR)
-#
-# logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
-#                     handlers=[c_handler, f_handler, f_info_handler],
-#                     level=log_level)
+logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
+                    handlers=[c_handler, f_handler, f_info_handler],
+                    level=log_level)
 
 onaToken = ""
 payload = ""
