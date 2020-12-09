@@ -50,7 +50,7 @@ def fetch_json_data(form_id_list):
             try:
                 logging.info(f'Pulling submission for {form_name}')
                 data_resp = helper.download_json_form_data(form_id, payload="", headers=headers)
-                logging.info(f'Form {form_name} hase {len(data_resp)} submissions')
+                logging.info(f'Form {form_name} has {len(data_resp)} submissions')
                 with open(json_file, 'w') as json_file_wr:
                     json.dump(data_resp, json_file_wr, indent=4)
             except Exception as errEx:
