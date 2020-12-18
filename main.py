@@ -14,7 +14,8 @@ tokenJsonFile = getenv('TOKEN_JSON')
 log_level = getenv('LOG_LEVEL', 'INFO')
 
 db_file = 'ona_form.db'
-all_form_list = 'allFormList.txt'
+# all_form_list = 'allFormList.txt'
+all_form_list = 'formList.txt'
 
 rootUrl = "https://api.ona.io"
 
