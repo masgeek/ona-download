@@ -81,7 +81,7 @@ try:
             fetch_json_data(json_form_list)
 
     else:
-        logging.warning('Unable to fetch token, please check your connection -> Exiting now, sorry human')
+        logging.warning('Unable to fetch token, please check your connection -> Exiting now :-(')
 
 except FileNotFoundError as err:
     logging.critical(f'Unable to read json file {err}', exc_info=True)
