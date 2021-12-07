@@ -21,11 +21,12 @@ class OnaHelper:
     @:param baseurl APi endpoint url
     """
 
-    def __init__(self, username, password, baseurl, db_file):
+    def __init__(self, username, password, baseurl, db_file, my_logger):
         self.username = username
         self.password = password
         self.baseurl = baseurl
         self.db_file = db_file
+        self.my_logger = my_logger
 
     def _auth_token(self):
         _url = self.baseurl + "/api/v1/user"
@@ -58,7 +59,7 @@ class OnaHelper:
         except HTTPError as http_err:
             print(f'HTTP error occurred: {http_err}')
         except Exception as err:
-            print(f'Other error occurred: {err}')
+            self.my_logger.error(f'Other error occurred: {err}')
         return api_token
 
     def fetch_form_data(self, payload, headers):
@@ -71,7 +72,7 @@ class OnaHelper:
 
             resp = _response.json()
             status_code = _response.status_code
-            print(f'----> Finished fetching form data {_response.status_code}')
+            self.my_logger.info(f'----> Finished fetching form data {_response.status_code}')
             for form in resp:
                 form_data = [
                     form['id'],
@@ -83,9 +84,9 @@ class OnaHelper:
                 ]
                 self._insert_to_database(form_data)
         except HTTPError as http_err:
-            print(f'Unable to fetch form list: {http_err}')
+            self.my_logger.error(f'Unable to fetch form list: {http_err}')
         except Exception as err:
-            print(f'Other error occurred: {err}')
+            self.my_logger.error(f'Other error occurred: {err}')
 
         return status_code
 
@@ -115,44 +116,44 @@ class OnaHelper:
 
     def download_json_form_data(self, form_id, payload, headers):
         _url = f'{self.baseurl}/api/v1/data/{form_id}'
-        print(f'Running url {_url}')
+        self.my_logger.info(f'Running url {_url}')
         resp = json.loads("[]")
         try:
             _response = requests.get(_url, data=payload, headers=headers)
             _response.raise_for_status()
             resp = _response.json()
         except HTTPError as http_err:
-            print(f'Unable to fetch form list: {http_err}')
+            self.my_logger.error(f'Unable to fetch form list: {http_err} form is {form_id}')
         except Exception as err:
-            print(f'Other error occurred: {err}')
+            self.my_logger.error(f'Other error occurred: {err}')
         return resp
 
     def download_csv_form_data(self, form_id, payload, headers):
         _url = f'{self.baseurl}/api/v1/data/{form_id}.csv'
-        print(f'Running csv url {_url}')
+        self.my_logger.info(f'Running csv url {_url}')
         resp = 0
         try:
             _response = requests.get(_url, data=payload, headers=headers, stream=True)
             _response.raise_for_status()
             resp = _response.text
         except HTTPError as http_err:
-            print(f'Unable to fetch form list: {http_err}')
+            self.my_logger.error(f'Unable to fetch form list: {http_err}')
         except Exception as err:
-            print(f'Other error occurred: {err}')
+            self.my_logger.error(f'Other error occurred: {err}')
         return resp
 
     def download_form_attachments(self, form_id, payload, headers, page_no, page_size, media_type):
         _url = f'{self.baseurl}/api/v1/media?xform={form_id}&page={page_no}&page_size={page_size}&type={media_type}'
-        print(f'Running attachment url {_url}')
+        self.my_logger.info(f'Running attachment url {_url}')
         resp = json.loads("[]")
         try:
             _response = requests.get(_url, data=payload, headers=headers)
             _response.raise_for_status()
             resp = _response.json()
         except HTTPError as http_err:
-            print(f'Unable to fetch form list: {http_err}')
+            self.my_logger.error(f'Unable to fetch form attachments: {http_err}')
         except Exception as err:
-            print(f'Other error occurred: {err}')
+            self.my_logger.error(f'Other error occurred: {err}')
         return resp
 
     def download_attachment(self, file_name, url, extension, page_no, form_name, save_dir):

@@ -14,7 +14,7 @@ tokenJsonFile = getenv('TOKEN_JSON')
 log_level = getenv('LOG_LEVEL', 'INFO')
 
 db_file = 'ona_form.db'
-# all_form_list = 'allFormList.txt'
+# all_form_list = 'sandman.txt'
 all_form_list = 'formList.txt'
 
 rootUrl = "https://api.ona.io"
@@ -34,7 +34,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
 
 onaToken = ""
 payload = ""
-helper = OnaHelper.OnaHelper(username=username, password=password, baseurl=rootUrl, db_file=db_file)
+helper = OnaHelper.OnaHelper(username=username, password=password, baseurl=rootUrl, db_file=db_file, my_logger= logging)
 
 logging.info(f'Using the following credentials username: {username}')
 
