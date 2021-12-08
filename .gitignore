@@ -1,8 +1,14 @@
+# file: ~/.gitignore_global
 venv
-*.iml
+.DS_Store
 .idea
+*.iml
 .env
-latest_tag.txt
+*.json
 py_github.egg-info
 dist
 build
+__pycache__
+*.log
+main.spec
+!token.sample.json
