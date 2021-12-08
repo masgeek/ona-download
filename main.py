@@ -5,17 +5,28 @@ import OnaHelper
 from os import getenv, path
 from dotenv import load_dotenv
 import yaml
+import sys
+import argparse
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--user', '-u', help='Define user to download file', type=str, default='mtariku')
+parser.add_argument('--password', '-p', help='User password', type=str)
+parser.add_argument('--file', '-f',
+                    help='Specify which txt file has the list of forms to process (formList.txt,sandman.txt)', type=str,
+                    default='formList.txt')
+
+args = parser.parse_args()
 
 load_dotenv()
 
-username = getenv('ONA_USERNAME')
-password = getenv('ONA_PASSWORD')
-tokenJsonFile = getenv('TOKEN_JSON')
+username = args.user
+password = args.password
+tokenJsonFile = f'{username}.json'
 log_level = getenv('LOG_LEVEL', 'INFO')
 
 db_file = 'ona_form.db'
-# all_form_list = 'sandman.txt'
-all_form_list = 'formList.txt'
+all_form_list = args.file
 
 rootUrl = "https://api.ona.io"
 
@@ -34,7 +45,8 @@ logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
 
 onaToken = ""
 payload = ""
-helper = OnaHelper.OnaHelper(username=username, password=password, baseurl=rootUrl, db_file=db_file, my_logger= logging)
+
+helper = OnaHelper.OnaHelper(username=username, password=password, baseurl=rootUrl, db_file=db_file, my_logger=logging)
 
 logging.info(f'Using the following credentials username: {username}')
 

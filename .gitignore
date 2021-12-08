@@ -4,10 +4,11 @@ venv
 .idea
 *.iml
 .env
-token.json
+*.json
 py_github.egg-info
 dist
 build
 __pycache__
 *.log
 main.spec
+!token.sample.json
