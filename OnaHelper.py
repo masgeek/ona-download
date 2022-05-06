@@ -12,6 +12,14 @@ from os import getenv, path
 from dotenv import load_dotenv
 import sqlite3
 import shutil
+from clint.textui import progress
+
+
+def download_attachment(file_name, url, extension, page_no, form_name, save_dir):
+    response = requests.get(url, stream=True)
+    with open(f'{save_dir}/{file_name}.{extension}', 'wb') as out_file:
+        shutil.copyfileobj(response.raw, out_file)
+    del response
 
 
 class OnaHelper:
@@ -40,12 +48,12 @@ class OnaHelper:
         try:
             c.execute('INSERT INTO ona_form_list values (?,?,?,?,?,?)', json_data)
             conn.commit()
-            print(f'Inserted form {json_data[1]} with id {json_data[0]}')
+            self.my_logger.debug(f'Inserted form {json_data[1]} with id {json_data[0]}')
         except sqlite3.IntegrityError as ie:
-            print('sqlite error: ', ie.args[0])  # column name is not unique
+            self.my_logger.error('sqlite error: ', ie.args[0])  # column name is not unique
             conn.rollback()
         except Exception as e:
-            print(f'Unable to insert to table {e}')
+            self.my_logger.error(f'Unable to insert to table {e}')
             conn.rollback()
         c.close()
 
@@ -57,13 +65,13 @@ class OnaHelper:
                 json.dump(resp, json_file_obj, indent=4)
             api_token = resp['api_token']
         except HTTPError as http_err:
-            print(f'HTTP error occurred: {http_err}')
+            self.my_logger.error(f'HTTP error occurred: {http_err}')
         except Exception as err:
             self.my_logger.error(f'Other error occurred: {err}')
         return api_token
 
     def fetch_form_data(self, payload, headers):
-        print(f'----> Fetching form data')
+        self.my_logger.debug(f'----> Fetching form data')
         status_code = 0
         try:
             _url = self.baseurl + "/api/v1/data"
@@ -72,7 +80,7 @@ class OnaHelper:
 
             resp = _response.json()
             status_code = _response.status_code
-            self.my_logger.info(f'----> Finished fetching form data {_response.status_code}')
+            self.my_logger.debug(f'----> Finished fetching form data {_response.status_code}')
             for form in resp:
                 form_data = [
                     form['id'],
@@ -116,7 +124,7 @@ class OnaHelper:
 
     def download_json_form_data(self, form_id, payload, headers):
         _url = f'{self.baseurl}/api/v1/data/{form_id}'
-        self.my_logger.info(f'Running url {_url}')
+        self.my_logger.debug(f'Running url {_url}')
         resp = json.loads("[]")
         try:
             _response = requests.get(_url, data=payload, headers=headers)
@@ -128,14 +136,21 @@ class OnaHelper:
             self.my_logger.error(f'Other error occurred: {err}')
         return resp
 
-    def download_csv_form_data(self, form_id, payload, headers):
+    def download_csv_form_data(self, form_id, payload, headers, file_name, download_format):
         _url = f'{self.baseurl}/api/v1/data/{form_id}.csv'
-        self.my_logger.info(f'Running csv url {_url}')
+        self.my_logger.debug(f'Running {download_format} url {_url}')
         resp = 0
         try:
             _response = requests.get(_url, data=payload, headers=headers, stream=True)
             _response.raise_for_status()
-            resp = _response.text
+            with open(file_name, "wb") as fileToSave:
+                total_length = int(_response.headers.get('content-length'))
+                expected_size = (total_length / 1024) + 1
+                for chunk in progress.bar(_response.iter_content(chunk_size=1024), expected_size=expected_size):
+                    if chunk:
+                        fileToSave.write(chunk)
+                        fileToSave.flush()
+
         except HTTPError as http_err:
             self.my_logger.error(f'Unable to fetch form list: {http_err}')
         except Exception as err:
@@ -144,7 +159,7 @@ class OnaHelper:
 
     def download_form_attachments(self, form_id, payload, headers, page_no, page_size, media_type):
         _url = f'{self.baseurl}/api/v1/media?xform={form_id}&page={page_no}&page_size={page_size}&type={media_type}'
-        self.my_logger.info(f'Running attachment url {_url}')
+        self.my_logger.debug(f'Running attachment url {_url}')
         resp = json.loads("[]")
         try:
             _response = requests.get(_url, data=payload, headers=headers)
@@ -155,9 +170,3 @@ class OnaHelper:
         except Exception as err:
             self.my_logger.error(f'Other error occurred: {err}')
         return resp
-
-    def download_attachment(self, file_name, url, extension, page_no, form_name, save_dir):
-        response = requests.get(url, stream=True)
-        with open(f'{save_dir}/{file_name}.{extension}', 'wb') as out_file:
-            shutil.copyfileobj(response.raw, out_file)
-        del response

@@ -10,6 +10,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 
+parser.add_argument('--format', '-fmt', help='Format to download the file in', type=str, default='json')
 parser.add_argument('--user', '-u', help='Define user to download file', type=str, default='mtariku')
 parser.add_argument('--password', '-p', help='User password', type=str)
 parser.add_argument('--file', '-f',
@@ -22,6 +23,7 @@ load_dotenv()
 
 username = args.user
 password = args.password
+fileFormat = args.format
 tokenJsonFile = f'{username}.json'
 log_level = getenv('LOG_LEVEL', 'INFO')
 
@@ -32,10 +34,11 @@ rootUrl = "https://api.ona.io"
 
 logfileError = path.join(path.dirname(path.abspath(__file__)), "logs/errors.log")
 logfileInfo = path.join(path.dirname(path.abspath(__file__)), "logs/info.log")
+
 c_handler = logging.StreamHandler()
 f_handler = logging.FileHandler(logfileError, 'w', 'utf-8')
 f_info_handler = logging.FileHandler(logfileInfo, 'w', 'utf-8')
-c_handler.setLevel(logging.INFO)
+c_handler.setLevel(logging.DEBUG)
 f_info_handler.setLevel(logging.INFO)
 f_handler.setLevel(logging.ERROR)
 
@@ -72,6 +75,22 @@ def fetch_json_data(form_id_list):
         logging.error(f'Unable to download JSON: {ex}', exc_info=True)
 
 
+def fetch_csv_data(form_id_list):
+    try:
+        for form in form_id_list:
+            # Now we query the data
+            form_id = form[0]
+            form_name = form[1]
+            json_file = f'downloads/json/{form_name}.{fileFormat}'
+            save_path = f'downloads/converted/{form_name}.{fileFormat}'
+            logging.info(f'Pulling submission for {form_name} save at {save_path}')
+            data_resp = helper.download_csv_form_data(form_id, payload="", headers=headers, download_format=fileFormat,
+                                                      file_name=save_path)
+
+    except Exception as ex:
+        logging.error(f'Unable to download CSV: {ex}', exc_info=True)
+
+
 try:
     try:
         with open(tokenJsonFile) as json_file_obj:
@@ -87,10 +106,13 @@ try:
     if onaToken:
         headers = {'authorization': 'Token ' + onaToken}
         logging.debug(f'Found valid api token -> proceeding to fetch form metadata')
-        resp = helper.fetch_form_data(payload="", headers=headers)
+        resp = helper.fetch_form_data(payload="", headers=headers)  # fetch list of forms
         if resp == 200:
             json_form_list = helper.read_form_list(all_form_list)
-            fetch_json_data(json_form_list)
+            if fileFormat == 'json':
+                fetch_json_data(json_form_list)
+            else:
+                fetch_csv_data(json_form_list)
 
     else:
         logging.warning('Unable to fetch token, please check your connection -> Exiting now :-(')
