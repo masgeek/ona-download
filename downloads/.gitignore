@@ -1,3 +1,5 @@
 # file: ~/.gitignore_global
 *
+!../phploy.ini
+!converted
 !.gitignore
