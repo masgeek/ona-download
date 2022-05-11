@@ -11,6 +11,7 @@ import argparse
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--format', '-fmt', help='Format to download the file in', type=str, default='json')
+parser.add_argument('--mode', '-m', help='Format to download the file in', type=str, default='INFO')
 parser.add_argument('--user', '-u', help='Define user to download file', type=str, default='mtariku')
 parser.add_argument('--password', '-p', help='User password', type=str)
 parser.add_argument('--file', '-f',
@@ -25,7 +26,7 @@ username = args.user
 password = args.password
 fileFormat = args.format
 tokenJsonFile = f'{username}.json'
-log_level = getenv('LOG_LEVEL', 'INFO')
+log_level = args.mode
 
 db_file = 'ona_form.db'
 all_form_list = args.file
