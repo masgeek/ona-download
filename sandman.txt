@@ -1,1 +1,1 @@
-Assign_FDTLPO,Register_PC,Register_EX
+Assign_FDTLPO,Register_PC,Register_EX,REgister_EN
