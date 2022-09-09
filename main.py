@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import yaml
 import sys
 import argparse
+import concurrent.futures
 
 parser = argparse.ArgumentParser()
 
@@ -59,21 +60,25 @@ data = json.loads("{}")
 
 def fetch_json_data(form_id_list):
     try:
-        for form in form_id_list:
-            # Now we query the data
-            form_id = form[0]
-            form_name = form[1]
-            json_file = f'downloads/json/{form_name}.json'
-            try:
-                logging.info(f'Pulling submission for {form_name}')
-                data_resp = helper.download_json_form_data(form_id, payload="", headers=headers)
-                logging.info(f'Form {form_name} has {len(data_resp)} submissions')
-                with open(json_file, 'w') as json_file_wr:
-                    json.dump(data_resp, json_file_wr, indent=4)
-            except Exception as errEx:
-                logging.error(f'Unable to write JSON {form_name} for: {errEx}', exc_info=True)
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for form in form_id_list:
+                form_id = form[0]
+                form_name = form[1]
+                json_file = f'downloads/json/{form_name}.json'
+                executor.submit(save_json_file, form_id, form_name, json_file)
     except Exception as ex:
         logging.error(f'Unable to download JSON: {ex}', exc_info=True)
+
+
+def save_json_file(form_id, form_name, json_file):
+    try:
+        logging.info(f'Pulling submission for {form_name}')
+        data_resp = helper.download_json_form_data(form_id, payload="", headers=headers)
+        with open(json_file, 'w') as json_file_wr:
+            json.dump(data_resp, json_file_wr, indent=4)
+            logging.info(f'Form {form_name} has been saved with {len(data_resp)} submissions')
+    except Exception as errEx:
+        logging.error(f'Unable to write JSON {form_name} for: {errEx}', exc_info=True)
 
 
 def fetch_csv_data(form_id_list):
