@@ -80,10 +80,13 @@ def save_json_file(form_id, form_name, json_file):
     try:
         logging.info(f'Pulling submission for {form_name}')
         data_resp = helper.download_json_form_data(form_id, payload="", headers=headers)
-        with open(json_file, 'w') as json_file_wr:
-            json.dump(data_resp, json_file_wr, indent=4)
-            logging.info(f'Form {form_name} has been saved with {len(data_resp)} submissions')
-            logging.info(f'File saved {json_file}')
+        if len(data_resp) > 0:
+            with open(json_file, 'w') as json_file_wr:
+                json.dump(data_resp, json_file_wr, indent=4)
+                logging.info(f'Form {form_name} has been saved with {len(data_resp)} submissions')
+                logging.debug(f'File saved {json_file}')
+        else:
+            logging.error(f'Unable to save file: {json_file}')
     except Exception as errEx:
         logging.error(f'Unable to write JSON {form_name} for: {errEx}', exc_info=True)
 
@@ -120,7 +123,6 @@ try:
             data = json.load(json_file_obj)
     except Exception as fileErr:
         logging.error(f'Error reading {tokenJsonFile} file {fileErr}', exc_info=True)
-    # next sequence here
     if "api_token" in data:
         onaToken = data['api_token']
     else:

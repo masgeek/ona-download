@@ -16,7 +16,8 @@ To create your virtual environment within your code directory run the command be
 
 ### Activate virtual environment
 
-You’ll need to use different syntax for activating the virtual environment depending on which operating system and command shell you’re using.
+You’ll need to use different syntax for activating the virtual environment depending on which operating system and
+command shell you’re using.
 
 On Unix or MacOS, using the bash shell: source `/path/to/venv/bin/activate`
 
@@ -33,3 +34,25 @@ pip install -r requirements.txt
 ```
 
 Next rename the `.env.example` to `.env` then update with the correct database credentials
+
+## Examples
+
+```bash
+python main.py -f formList.txt
+```
+
+```bash
+python main.py -f sandman.txt -sd=sandman
+```
+
+```bash
+python main.py -f turry_forms.txt -sd=sandman
+```
+
+```bash
+python main.py -f rw.txt -sd=rw -u=rmanners
+```
+
+```bash
+python main.py -f ng.txt -sd=ng -u=kavive
+```
