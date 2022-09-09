@@ -2,7 +2,7 @@ import json
 import logging
 import logging.config
 import OnaHelper
-from os import getenv, path
+from os import getenv, path, makedirs
 from dotenv import load_dotenv
 import yaml
 import sys
@@ -11,6 +11,8 @@ import concurrent.futures
 
 parser = argparse.ArgumentParser()
 
+parser.add_argument('--path', '-pt', help='Directory to download the files to', type=str, default='json_ona_data')
+parser.add_argument('--subdir', '-sd', help='Sub Directory to download the files to', type=str, default='')
 parser.add_argument('--format', '-fmt', help='Format to download the file in', type=str, default='json')
 parser.add_argument('--mode', '-m', help='Format to download the file in', type=str, default='INFO')
 parser.add_argument('--user', '-u', help='Define user to download file', type=str, default='mtariku')
@@ -26,6 +28,8 @@ load_dotenv()
 username = args.user
 password = args.password
 fileFormat = args.format
+jsonPath = args.path
+subDir = args.subdir
 tokenJsonFile = f'{username}.json'
 log_level = args.mode
 
@@ -64,7 +68,9 @@ def fetch_json_data(form_id_list):
             for form in form_id_list:
                 form_id = form[0]
                 form_name = form[1]
-                json_file = f'downloads/json/{form_name}.json'
+                save_path = f'{jsonPath}/{subDir}'
+                check_dir(save_path)
+                json_file = f'{save_path}/{form_name}.json'
                 executor.submit(save_json_file, form_id, form_name, json_file)
     except Exception as ex:
         logging.error(f'Unable to download JSON: {ex}', exc_info=True)
@@ -77,6 +83,7 @@ def save_json_file(form_id, form_name, json_file):
         with open(json_file, 'w') as json_file_wr:
             json.dump(data_resp, json_file_wr, indent=4)
             logging.info(f'Form {form_name} has been saved with {len(data_resp)} submissions')
+            logging.info(f'File saved {json_file}')
     except Exception as errEx:
         logging.error(f'Unable to write JSON {form_name} for: {errEx}', exc_info=True)
 
@@ -87,7 +94,9 @@ def fetch_csv_data(form_id_list):
             # Now we query the data
             form_id = form[0]
             form_name = form[1]
-            json_file = f'downloads/json/{form_name}.{fileFormat}'
+            save_path = f'downloads/json'
+            check_dir(save_path)
+            json_file = f'{save_path}{form_name}.{fileFormat}'
             save_path = f'downloads/converted/{form_name}.{fileFormat}'
             logging.info(f'Pulling submission for {form_name} save at {save_path}')
             data_resp = helper.download_csv_form_data(form_id, payload="", headers=headers, download_format=fileFormat,
@@ -95,6 +104,14 @@ def fetch_csv_data(form_id_list):
 
     except Exception as ex:
         logging.error(f'Unable to download CSV: {ex}', exc_info=True)
+
+
+def check_dir(save_path):
+    is_exist = path.exists(save_path)
+    if not is_exist:
+        # Create a new directory because it does not exist
+        makedirs(save_path)
+        logging.info(f'The new directory is created!')
 
 
 try:

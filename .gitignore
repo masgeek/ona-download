@@ -13,3 +13,4 @@ __pycache__
 main.spec
 !token.sample.json
 .phploy
+json_ona_data
