@@ -1,21 +1,15 @@
 # Python program to
 # demonstrate defining
 # a class
+import json
+import shutil
 import string
-from typing import List, Any
+import time
 
 import requests
-import time
-from contextlib import closing
-import csv
-from string import Template
-from requests.exceptions import HTTPError
-import json
-from os import getenv, path
-from dotenv import load_dotenv
-import sqlite3
-import shutil
 from clint.textui import progress
+from requests.exceptions import HTTPError
+from processing.ProcessData import ProcessData
 
 from my_logger import MyLogger
 
@@ -30,34 +24,18 @@ def download_attachment(file_name, url, extension, page_no, form_name, save_dir)
 class OnaHelper:
     """
     @:param baseurl APi endpoint url
-    @:param db_file SQlite file to save form list
     """
 
-    def __init__(self, baseurl='https://api.ona.io', db_file='ona_form.db'):
+    def __init__(self, baseurl='https://api.ona.io'):
         self.logger = MyLogger()
+        self.ona_process = ProcessData()
         self.baseurl = baseurl
-        self.db_file = db_file
 
     def _auth_token(self, username, password):
         _url = self.baseurl + "/api/v1/user"
         _response = requests.get(_url, auth=(username, password))
         _response.raise_for_status()
         return _response.json()
-
-    def _insert_to_database(self, json_data):
-        conn = sqlite3.connect(self.db_file)
-        c = conn.cursor()
-        try:
-            c.execute('INSERT INTO ona_form_list values (?,?,?,?,?,?)', json_data)
-            conn.commit()
-            self.logger.debug(f'Inserted form {json_data[1]} with id {json_data[0]}')
-        except sqlite3.IntegrityError as ie:
-            self.logger.error('sqlite error: ', ie.args[0])  # column name is not unique
-            conn.rollback()
-        except Exception as e:
-            self.logger.error(f'Unable to insert to table {e}')
-            conn.rollback()
-        c.close()
 
     def refresh_token(self, json_file, username, password):
         api_token = ""
@@ -92,7 +70,7 @@ class OnaHelper:
                     form['url'],
                     time.time(),
                 ]
-                self._insert_to_database(form_data)
+                self.ona_process.insert_to_database(form_data)
         except HTTPError as http_err:
             self.logger.error(f'Unable to fetch form list: {http_err}')
         except Exception as err:
@@ -100,47 +78,21 @@ class OnaHelper:
 
         return status_code
 
-    def read_all_forms(self) -> list[list[string]]:
-        form_id_list: list[list[string]] = []
-        conn = sqlite3.connect(self.db_file)
-        conn.row_factory = sqlite3.Row
-        c = conn.cursor()
-        # Now we query the database
-        c.execute('SELECT form_id,form_name FROM ona_form_list')
-        data = [dict(row) for row in c.fetchall()]
-        for form_data in data:
-            form_id = form_data['form_id']
-            form_name = form_data['form_name']
-            form_id_list.append([form_id, form_name])
-            self.logger.info(f'Processing form name `{form_name}` -> `{form_id}`')
+    def fetch_form_stats(self, form_id: string, headers: list, group_by: string = '_xform_id') -> int:
+        _url = f'{self.baseurl}/api/v1/stats/submissions/{form_id}?group={group_by}&name=total_records'
+        total_records: int = 0
+        try:
+            _response = requests.get(_url, headers=headers)
+            _response.raise_for_status()
+            self.logger.debug(_response.json())
+            resp = _response.json()
+            total_records = resp[0]['count']
+        except HTTPError as http_err:
+            self.logger.error(f'Unable to fetch form list: {http_err} form is {form_id}')
+        except Exception as err:
+            self.logger.error(f'Other error occurred: {err}')
 
-        conn.close()
-
-        return form_id_list
-
-    def read_form_list(self, form_list_file: string) -> list[list[string]]:
-        f = open(form_list_file, "r")
-        file_string = f.read()
-        file_list = file_string.replace('"', '').split(",")
-
-        # Loop though the file list
-        form_id_list: list[list[string]] = []
-        conn = sqlite3.connect(self.db_file)
-        conn.row_factory = sqlite3.Row
-        c = conn.cursor()
-        for form_name in file_list:
-            name = form_name.strip("\n").rstrip("\n")
-            # Now we query the database
-            c.execute('SELECT form_id,form_name FROM ona_form_list WHERE form_name = ?', (name,))
-            data = [dict(row) for row in c.fetchall()]
-            for form_data in data:
-                form_id = form_data['form_id']
-                form_name = form_data['form_name']
-                form_id_list.append([form_id, form_name])
-                self.logger.info(f'Processing form name `{form_name}` -> `{form_id}`')
-        f.close()
-        conn.close()
-        return form_id_list
+        return total_records
 
     def download_json_form_data(self, form_id, payload=None, headers=None):
         sort = '{"_submission_time":-1}'
@@ -151,6 +103,9 @@ class OnaHelper:
             _response = requests.get(_url, data=payload, headers=headers)
             _response.raise_for_status()
             resp = _response.json()
+
+            self.logger.debug("Header information is ->")
+            self.logger.debug(_response.headers.get('link'))
         except HTTPError as http_err:
             self.logger.error(f'Unable to fetch form list: {http_err} form is {form_id}')
         except Exception as err:

@@ -1,18 +1,12 @@
-import json
-import string
 from os import getenv
 
 import typer
-import time
-from rich import print
-from typing_extensions import Annotated
-from rich.progress import track
 from my_logger import MyLogger
 
 # noinspection PyPackageRequirements
 from dotenv import load_dotenv
 from ona.OnaHelper import OnaHelper
-from ona.ProcessData import ProcessData
+from processing.ProcessData import ProcessData
 
 load_dotenv()
 
