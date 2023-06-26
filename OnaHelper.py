@@ -20,7 +20,7 @@ def download_attachment(file_name, url, extension, page_no, form_name, save_dir)
     with open(f'{save_dir}/{file_name}.{extension}', 'wb') as out_file:
         shutil.copyfileobj(response.raw, out_file)
     del response
-
+    
 
 class OnaHelper:
     """
@@ -29,12 +29,12 @@ class OnaHelper:
     @:param baseurl APi endpoint url
     """
 
-    def __init__(self, username, password, baseurl, db_file, my_logger):
+    def __init__(self, username, password, my_logger, baseurl='https://api.ona.io', db_file='ona_form.db'):
         self.username = username
         self.password = password
+        self.my_logger = my_logger
         self.baseurl = baseurl
         self.db_file = db_file
-        self.my_logger = my_logger
 
     def _auth_token(self):
         _url = self.baseurl + "/api/v1/user"

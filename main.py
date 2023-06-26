@@ -1,11 +1,12 @@
 import json
 import logging
 import logging.config
-import OnaHelper
-from os import getenv, path, makedirs
+
 from dotenv import load_dotenv
-import yaml
-import sys
+
+import OnaHelper
+import pathlib
+from os import path, makedirs
 import argparse
 import concurrent.futures
 
@@ -110,6 +111,11 @@ def fetch_csv_data(form_id_list):
 
 
 def check_dir(save_path):
+    pathlib.Path(save_path).mkdir(parents=True, exist_ok=True)
+    logging.info(f'The new directory is created!')
+
+
+def check_dir_old(save_path):
     is_exist = path.exists(save_path)
     if not is_exist:
         # Create a new directory because it does not exist

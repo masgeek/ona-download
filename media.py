@@ -26,7 +26,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
 
 onaToken = ""
 payload = ""
-helper = OnaHelper
+helper = OnaHelper.OnaHelper(username='mtariku', password='applenose', my_logger=logging)
 
 logging.debug(f'Using the following credentials username: {username}')
 

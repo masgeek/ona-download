@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "ona"
+version = "1.0.0"
+description = "ONA Json forms downloader"
+authors = ["Sammy Barasa <barsamms@gmail.com>"]
+readme = "README.md"
+packages = [{ include = "ona" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+paramiko = "^3.2.0"
+aiohttp = "^3.8.4"
+requests = "^2.31.0"
+python-dotenv = "^1.0.0"
+clint = "^0.5.1"
+pyyaml = "^6.0"
+typer = {extras = ["all"], version = "^0.9.0"}
+colorlog = "^6.7.0"
+
+[tool.poetry.dev-dependencies]
+pipreqs = "^0.4.13"
+
+[virtualenvs]
+create = true
+in-project = true
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
