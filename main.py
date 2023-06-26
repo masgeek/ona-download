@@ -4,7 +4,7 @@ import logging.config
 
 from dotenv import load_dotenv
 
-import OnaHelper
+from ona import OnaHelper
 import pathlib
 from os import path, makedirs
 import argparse

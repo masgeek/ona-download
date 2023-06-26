@@ -1,7 +1,7 @@
 import json
 import os
 import logging
-import OnaHelper
+from ona import OnaHelper
 from os import getenv, path
 from dotenv import load_dotenv
 

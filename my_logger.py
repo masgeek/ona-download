@@ -10,7 +10,7 @@ load_dotenv(verbose=True)
 
 class MyLogger:
     _logger = None
-    log_level = environ.get("LOG_LEVEL", "INFO")
+    log_level = environ.get("LOG_LEVEL", "INFO").upper()
 
     def __new__(cls, *args, **kwargs):
         if cls._logger is None:
@@ -19,13 +19,13 @@ class MyLogger:
             cls._logger.setLevel(cls.log_level)
 
             file_fmt = logging.Formatter(
-                "%(asctime)s %(levelname)s %(thread)s [%(filename)s:%(lineno)s %(funcName)s] :: %(message)s",
+                fmt="%(asctime)s %(levelname)s %(thread)s [%(filename)s:%(lineno)s %(funcName)s] :: %(message)s",
                 datefmt="%Y-%m-%d %H:%M:%S",
             )
 
             console_fmt = ColoredFormatter(
                 fmt="%(asctime)s %(log_color)s%(levelname)-8s%(reset)s| [%(filename)s:%(lineno)s %(funcName)s]"
-                "%(reset)s | %(log_color)s%(message)s",
+                    "%(reset)s | %(log_color)s%(message)s",
                 datefmt="%Y-%m-%d %H:%M:%S",
                 reset=True,
                 log_colors={

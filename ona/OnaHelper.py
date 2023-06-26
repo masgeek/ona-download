@@ -1,6 +1,9 @@
 # Python program to
 # demonstrate defining
 # a class
+import string
+from typing import List, Any
+
 import requests
 import time
 from contextlib import closing
@@ -14,31 +17,30 @@ import sqlite3
 import shutil
 from clint.textui import progress
 
+from my_logger import MyLogger
+
 
 def download_attachment(file_name, url, extension, page_no, form_name, save_dir):
     response = requests.get(url, stream=True)
     with open(f'{save_dir}/{file_name}.{extension}', 'wb') as out_file:
         shutil.copyfileobj(response.raw, out_file)
     del response
-    
+
 
 class OnaHelper:
     """
-    @:param username
-    @:param password
     @:param baseurl APi endpoint url
+    @:param db_file SQlite file to save form list
     """
 
-    def __init__(self, username, password, my_logger, baseurl='https://api.ona.io', db_file='ona_form.db'):
-        self.username = username
-        self.password = password
-        self.my_logger = my_logger
+    def __init__(self, baseurl='https://api.ona.io', db_file='ona_form.db'):
+        self.logger = MyLogger()
         self.baseurl = baseurl
         self.db_file = db_file
 
-    def _auth_token(self):
+    def _auth_token(self, username, password):
         _url = self.baseurl + "/api/v1/user"
-        _response = requests.get(_url, auth=(self.username, self.password))
+        _response = requests.get(_url, auth=(username, password))
         _response.raise_for_status()
         return _response.json()
 
@@ -48,30 +50,30 @@ class OnaHelper:
         try:
             c.execute('INSERT INTO ona_form_list values (?,?,?,?,?,?)', json_data)
             conn.commit()
-            self.my_logger.debug(f'Inserted form {json_data[1]} with id {json_data[0]}')
+            self.logger.debug(f'Inserted form {json_data[1]} with id {json_data[0]}')
         except sqlite3.IntegrityError as ie:
-            self.my_logger.error('sqlite error: ', ie.args[0])  # column name is not unique
+            self.logger.error('sqlite error: ', ie.args[0])  # column name is not unique
             conn.rollback()
         except Exception as e:
-            self.my_logger.error(f'Unable to insert to table {e}')
+            self.logger.error(f'Unable to insert to table {e}')
             conn.rollback()
         c.close()
 
-    def refresh_token(self, json_file):
+    def refresh_token(self, json_file, username, password):
         api_token = ""
         try:
-            resp = self._auth_token()
+            resp = self._auth_token(username, password)
             with open(json_file, 'w') as json_file_obj:
                 json.dump(resp, json_file_obj, indent=4)
             api_token = resp['api_token']
         except HTTPError as http_err:
-            self.my_logger.error(f'HTTP error occurred: {http_err}')
+            self.logger.error(f'HTTP error occurred: {http_err}')
         except Exception as err:
-            self.my_logger.error(f'Other error occurred: {err}')
+            self.logger.error(f'Other error occurred: {err}')
         return api_token
 
     def fetch_form_data(self, payload, headers):
-        self.my_logger.debug(f'----> Fetching form data')
+        self.logger.debug(f'----> Fetching form data')
         status_code = 0
         try:
             _url = self.baseurl + "/api/v1/data"
@@ -80,7 +82,7 @@ class OnaHelper:
 
             resp = _response.json()
             status_code = _response.status_code
-            self.my_logger.debug(f'----> Finished fetching form data {_response.status_code}')
+            self.logger.debug(f'----> Finished fetching form data {_response.status_code}')
             for form in resp:
                 form_data = [
                     form['id'],
@@ -92,20 +94,37 @@ class OnaHelper:
                 ]
                 self._insert_to_database(form_data)
         except HTTPError as http_err:
-            self.my_logger.error(f'Unable to fetch form list: {http_err}')
+            self.logger.error(f'Unable to fetch form list: {http_err}')
         except Exception as err:
-            self.my_logger.error(f'Other error occurred: {err}')
+            self.logger.error(f'Other error occurred: {err}')
 
         return status_code
 
-    def read_form_list(self, form_list_file):
+    def read_all_forms(self) -> list[list[string]]:
+        form_id_list: list[list[string]] = []
+        conn = sqlite3.connect(self.db_file)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        # Now we query the database
+        c.execute('SELECT form_id,form_name FROM ona_form_list')
+        data = [dict(row) for row in c.fetchall()]
+        for form_data in data:
+            form_id = form_data['form_id']
+            form_name = form_data['form_name']
+            form_id_list.append([form_id, form_name])
+            self.logger.info(f'Processing form name `{form_name}` -> `{form_id}`')
+
+        conn.close()
+
+        return form_id_list
+
+    def read_form_list(self, form_list_file: string) -> list[list[string]]:
         f = open(form_list_file, "r")
         file_string = f.read()
         file_list = file_string.replace('"', '').split(",")
 
         # Loop though the file list
-        form_id_list = []
-        form_id = 0
+        form_id_list: list[list[string]] = []
         conn = sqlite3.connect(self.db_file)
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
@@ -118,27 +137,29 @@ class OnaHelper:
                 form_id = form_data['form_id']
                 form_name = form_data['form_name']
                 form_id_list.append([form_id, form_name])
+                self.logger.info(f'Processing form name `{form_name}` -> `{form_id}`')
         f.close()
         conn.close()
         return form_id_list
 
-    def download_json_form_data(self, form_id, payload, headers):
-        _url = f'{self.baseurl}/api/v1/data/{form_id}'
-        self.my_logger.debug(f'Running url {_url}')
+    def download_json_form_data(self, form_id, payload=None, headers=None):
+        sort = '{"_submission_time":-1}'
+        _url = f'{self.baseurl}/api/v1/data/{form_id}?sort={sort}&page=1&page_size=200'
+        self.logger.debug(f'Running url {_url}')
         resp = json.loads("[]")
         try:
             _response = requests.get(_url, data=payload, headers=headers)
             _response.raise_for_status()
             resp = _response.json()
         except HTTPError as http_err:
-            self.my_logger.error(f'Unable to fetch form list: {http_err} form is {form_id}')
+            self.logger.error(f'Unable to fetch form list: {http_err} form is {form_id}')
         except Exception as err:
-            self.my_logger.error(f'Other error occurred: {err}')
+            self.logger.error(f'Other error occurred: {err}')
         return resp
 
     def download_csv_form_data(self, form_id, payload, headers, file_name, download_format):
         _url = f'{self.baseurl}/api/v1/data/{form_id}.csv'
-        self.my_logger.debug(f'Running {download_format} url {_url}')
+        self.logger.debug(f'Running {download_format} url {_url}')
         resp = 0
         try:
             _response = requests.get(_url, data=payload, headers=headers, stream=True)
@@ -152,21 +173,21 @@ class OnaHelper:
                         fileToSave.flush()
 
         except HTTPError as http_err:
-            self.my_logger.error(f'Unable to fetch form list: {http_err}')
+            self.logger.error(f'Unable to fetch form list: {http_err}')
         except Exception as err:
-            self.my_logger.error(f'Other error occurred: {err}')
+            self.logger.error(f'Other error occurred: {err}')
         return resp
 
     def download_form_attachments(self, form_id, payload, headers, page_no, page_size, media_type):
         _url = f'{self.baseurl}/api/v1/media?xform={form_id}&page={page_no}&page_size={page_size}&type={media_type}'
-        self.my_logger.debug(f'Running attachment url {_url}')
+        self.logger.debug(f'Running attachment url {_url}')
         resp = json.loads("[]")
         try:
             _response = requests.get(_url, data=payload, headers=headers)
             _response.raise_for_status()
             resp = _response.json()
         except HTTPError as http_err:
-            self.my_logger.error(f'Unable to fetch form attachments: {http_err}')
+            self.logger.error(f'Unable to fetch form attachments: {http_err}')
         except Exception as err:
-            self.my_logger.error(f'Other error occurred: {err}')
+            self.logger.error(f'Other error occurred: {err}')
         return resp
