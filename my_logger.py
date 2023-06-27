@@ -8,6 +8,18 @@ from dotenv import load_dotenv
 load_dotenv(verbose=True)
 
 
+class LogLevelFilter(logging.Filter):
+    """https://stackoverflow.com/a/7447596/190597 (robert)"""
+
+    def __init__(self, level):
+        super().__init__()
+        self.level = level
+
+    def filter(self, record):
+        # Just revert >= to <= then get only current level or lower.
+        return record.levelno <= self.level
+
+
 class MyLogger:
     _logger = None
     log_level = environ.get("LOG_LEVEL", "INFO").upper()
@@ -15,7 +27,7 @@ class MyLogger:
     def __new__(cls, *args, **kwargs):
         if cls._logger is None:
             cls._logger = super().__new__(cls, *args, **kwargs)
-            cls._logger = logging.getLogger("fuelrod")
+            cls._logger = logging.getLogger("peewee")
             cls._logger.setLevel(cls.log_level)
 
             file_fmt = logging.Formatter(
@@ -45,20 +57,19 @@ class MyLogger:
             if not path.isdir(dirname):
                 mkdir(dirname)
 
-            base_file_name = dirname + "/log_" + now.strftime("%Y-%m-%d") + ".log"
+            ona_log = dirname + "/ona_" + now.strftime("%Y-%m-%d") + ".log"
 
-            info_log_file = path.join(
-                path.dirname(path.abspath(__file__)), base_file_name
-            )
+            ona_log_file = path.join(path.dirname(path.abspath(__file__)), ona_log)
+            ona_file_handler = logging.FileHandler(ona_log_file)
 
-            file_handler = logging.FileHandler(info_log_file)
+            # ona_file_handler.setLevel(logging.WARN)
 
             stream_handler = logging.StreamHandler()
 
-            file_handler.setFormatter(file_fmt)
+            ona_file_handler.setFormatter(file_fmt)
             stream_handler.setFormatter(console_fmt)
 
             cls._logger.addHandler(stream_handler)
-            cls._logger.addHandler(file_handler)
+            cls._logger.addHandler(ona_file_handler)
 
         return cls._logger

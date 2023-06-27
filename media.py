@@ -10,7 +10,6 @@ load_dotenv()
 username = getenv('ONA_USERNAME')
 password = getenv('ONA_PASSWORD')
 tokenJsonFile = getenv('TOKEN_JSON')
-log_level = getenv('LOG_LEVEL', 'INFO')
 
 db_file = 'ona_form.db'
 all_form_list = 'allFormList.txt'
@@ -21,12 +20,11 @@ rootUrl = "https://api.ona.io"
 # logLevel = logging.DEBUG if CONFIG['log_debug_messages'] else logging.INFO
 logfile = path.join(path.dirname(path.abspath(__file__)), "ona_media_download.log")
 logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
-                    handlers=[logging.FileHandler(logfile, 'w', 'utf-8')],
-                    level=log_level)
+                    handlers=[logging.FileHandler(logfile, 'w', 'utf-8')])
 
 onaToken = ""
 payload = ""
-helper = OnaHelper.OnaHelper(username='mtariku', password='applenose', my_logger=logging)
+helper = OnaHelper()
 
 logging.debug(f'Using the following credentials username: {username}')
 

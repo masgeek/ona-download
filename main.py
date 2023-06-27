@@ -80,7 +80,7 @@ def fetch_json_data(form_id_list):
 def save_json_file(form_id, form_name, json_file):
     try:
         logging.info(f'Pulling submission for {form_name}')
-        data_resp = helper.download_json_form_data(form_id, payload="", headers=headers)
+        data_resp = helper.fetch_form_data(form_id, payload="", headers=headers)
         if len(data_resp) > 0:
             with open(json_file, 'w') as json_file_wr:
                 json.dump(data_resp, json_file_wr, indent=4)
@@ -137,7 +137,7 @@ try:
     if onaToken:
         headers = {'authorization': 'Token ' + onaToken}
         logging.debug(f'Found valid api token -> proceeding to fetch form metadata')
-        resp = helper.fetch_form_data(payload="", headers=headers)  # fetch list of forms
+        resp = helper.fetch_form_list(payload="", headers=headers)  # fetch list of forms
         if resp == 200:
             json_form_list = helper.read_form_list(all_form_list)
             if fileFormat == 'json':

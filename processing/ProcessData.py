@@ -7,8 +7,22 @@ import string
 from my_logger import MyLogger
 
 
+class ProcessDb:
+    def __init__(self, db_file):
+        self.conn = sqlite3.connect(db_file)
+        self.logger = MyLogger()
+
+    def create_form_table(self):
+        query = 'CREATE TABLE ona_form_list (' \
+                '"form_id" INTEGER(255),"form_name" TEXT(255),"form_title" TEXT(255),' \
+                '"description" TEXT(255),"url" TEXT(255),"created_at" integer,' \
+                'UNIQUE ("form_id" ASC, "form_name" ASC) ON CONFLICT FAIL)'
+        c = self.conn.cursor()
+        c.execute(query)
+
+
 class ProcessData:
-    def __init__(self, db_file='ona_form.db'):
+    def __init__(self, db_file):
         self.logger = MyLogger()
         self.db_file = db_file
 
@@ -23,13 +37,13 @@ class ProcessData:
 
         return None
 
-    def insert_to_database(self, json_data):
+    def insert_to_database(self, form_list):
         conn = sqlite3.connect(self.db_file)
         c = conn.cursor()
         try:
-            c.execute('INSERT INTO ona_form_list values (?,?,?,?,?,?)', json_data)
+            c.execute('INSERT INTO ona_form_list values (?,?,?,?,?,?)', form_list)
             conn.commit()
-            self.logger.debug(f'Inserted form {json_data[1]} with id {json_data[0]}')
+            self.logger.info(f'Inserted form {form_list[1]} with id {form_list[0]}')
         except sqlite3.IntegrityError as ie:
             self.logger.error('SQlite error: ', ie.args[0])  # column name is not unique
             conn.rollback()
@@ -110,6 +124,10 @@ class ProcessData:
                 self.logger.error(f'Unable to save file --> {json_file}')
         except Exception as errEx:
             self.logger.error(f'Unable to write JSON {form_name} for: {errEx}', exc_info=True)
+
+    def process_form_data(self, form_future):
+        campaign_result: object = form_future.result()
+        self.logger.info(f"Callback data is \n{json.dumps(campaign_result, indent=4)}")
 
     def check_dir(self, save_path):
         pathlib.Path(save_path).mkdir(parents=True, exist_ok=True)
